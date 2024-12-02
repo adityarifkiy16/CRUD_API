@@ -21,10 +21,9 @@ class MakulController extends Controller
 
     public function store(Request $request)
     {
-        dd($request->all());
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'jadwal' => 'required|date',
+            'jadwal' => 'required|date_format:H:i',
         ]);
 
         if ($validator->fails()) {
@@ -38,8 +37,7 @@ class MakulController extends Controller
 
         $makul = Makul::create([
             'name' => $request->name,
-            'nim' => $request->email,
-            'jurusan' => $request->jurusan
+            'jadwal' => $request->jadwal,
         ]);
 
         return response()->json([
@@ -51,13 +49,12 @@ class MakulController extends Controller
         ]);
     }
 
-    public function update($id, Request $request)
+    public function update(Request $request, $id)
     {
         $makul = Makul::findOrFail($id);
         $validator = Validator::make($request->all(), [
-            'name' => 'nullable|string|max:255',
-            'nim' => 'nullable|string|max:10',
-            'jurusan' => 'nullable|string'
+            'name' => 'required|string|max:255',
+            'jadwal' => 'required|date_format:H:i',
         ]);
 
         if ($validator->fails()) {
@@ -71,8 +68,7 @@ class MakulController extends Controller
 
         $makul->update([
             'name' => $request->name,
-            'nim' => $request->nim,
-            'jurusan' => $request->jurusan
+            'jadwal' => $request->jadwal,
         ]);
 
         return response()->json([
@@ -92,7 +88,7 @@ class MakulController extends Controller
         return response()->json([
             'code' => 200,
             'data' => [
-                'message' => 'Data updated successfully',
+                'message' => 'Data deleted successfully',
                 'makul' => $makul
             ]
         ], 200);
