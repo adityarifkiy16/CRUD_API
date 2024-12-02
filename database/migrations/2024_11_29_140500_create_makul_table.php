@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('makul', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->dateTime('jadwal');
+            $table->time('jadwal');
             $table->timestamps();
         });
     }
