@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -11,6 +12,14 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    protected $expiredAt;
+
+    public function __construct()
+    {
+        // set expired token
+        $this->expiredAt = Carbon::now()->addHours(24);
+    }
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -34,7 +43,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token', ['*'], $this->expiredAt)->plainTextToken;
 
         return response()->json([
             'code' => 200,
@@ -42,7 +51,8 @@ class AuthController extends Controller
                 'message' => 'Berhasil register',
                 'user' => $user,
                 'token' => $token,
-                'token_type' => 'Bearer'
+                'token_type' => 'Bearer',
+                'token_expired' =>  $this->expiredAt->toDateTimeString(),
             ]
         ]);
     }
@@ -65,18 +75,21 @@ class AuthController extends Controller
 
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Wrong email or password combination'
             ], 401);
         }
 
         $user  = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token', ['*'], $this->expiredAt)->plainTextToken;
+
 
         return response()->json([
             'code' => 200,
             'data' => [
                 'message' => 'Login successful',
-                'token' => $token
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'token_expired' =>  $this->expiredAt->toDateTimeString(),
             ]
         ], 200);
     }
